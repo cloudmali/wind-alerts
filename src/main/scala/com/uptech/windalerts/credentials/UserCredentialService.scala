@@ -1,11 +1,12 @@
-package com.uptech.windalerts.users
+package com.uptech.windalerts.credentials
 
 import cats.data.EitherT
 import cats.effect.Sync
 import com.github.t3hnar.bcrypt._
 import com.uptech.windalerts.Repos
+import com.uptech.windalerts.domain.domain.SurfsUpEitherT
 import com.uptech.windalerts.domain.{UserAuthenticationFailedError, conversions, _}
-import com.uptech.windalerts.domain.domain.{ChangePasswordRequest, Credentials, SurfsUpEitherT}
+import com.uptech.windalerts.infrastructure.endpoints.domain.ChangePasswordRequest
 
 class UserCredentialService[F[_] : Sync](repos: Repos[F])  {
   def getByCredentials(

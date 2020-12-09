@@ -4,14 +4,18 @@ import java.io.{DataInputStream, File}
 import java.security.PrivateKey
 
 import cats.data.EitherT
-import cats.effect.{ContextShift, IO}
+import cats.effect.{ContextShift, IO, Sync}
 import com.softwaremill.sttp.{HttpURLConnectionBackend, sttp, _}
 import com.turo.pushy.apns.auth.ApnsSigningKey
 import com.uptech.windalerts.domain.UserNotFoundError
-import com.uptech.windalerts.domain.codecs._
-import com.uptech.windalerts.domain.domain.{AppleUser, SocialUser, SurfsUpEitherT, TokenResponse}
-import com.uptech.windalerts.social.login.domain.{AppleAccessRequest, SocialPlatform}
-import io.circe.parser
+import com.uptech.windalerts.domain.domain.SurfsUpEitherT
+import com.uptech.windalerts.infrastructure.social.login.ApplePlatform.{AppleUser, TokenResponse}
+import com.uptech.windalerts.social.login.domain.AppleAccessRequest
+import com.uptech.windalerts.social.login.{SocialPlatform, SocialUser}
+import io.circe.generic.semiauto.deriveDecoder
+import io.circe.{Decoder, parser}
+import org.http4s.EntityDecoder
+import org.http4s.circe.jsonOf
 import org.log4s.getLogger
 import pdi.jwt._
 
@@ -20,13 +24,15 @@ import scala.concurrent.Future
 
 
 class ApplePlatform(filename: String)(implicit cs: ContextShift[IO]) extends SocialPlatform[IO, AppleAccessRequest] {
+
+
   val privateKey = getPrivateKey(filename)
 
   override def fetchUserFromPlatform(credentials: AppleAccessRequest): SurfsUpEitherT[IO, SocialUser] = {
-    fetchUserFromPlatform_(credentials).leftMap(_=>UserNotFoundError())
+    fetchUserFromPlatform_(credentials).leftMap(_ => UserNotFoundError())
   }
 
-  private def fetchUserFromPlatform_(credentials: AppleAccessRequest): SurfsUpEitherT[IO, SocialUser]  = {
+  private def fetchUserFromPlatform_(credentials: AppleAccessRequest): SurfsUpEitherT[IO, SocialUser] = {
     EitherT.liftF(IO.fromFuture(IO(Future(getUser(credentials.authorizationCode)))))
       .map(appleUser => SocialUser(appleUser.sub, appleUser.email, credentials.deviceType, credentials.deviceToken, credentials.name))
   }
@@ -55,7 +61,7 @@ class ApplePlatform(filename: String)(implicit cs: ContextShift[IO]) extends Soc
     parsedEither.flatMap(x => x.as[AppleUser]).right.get
   }
 
-  private def generateJWT(privateKey:PrivateKey) = {
+  private def generateJWT(privateKey: PrivateKey) = {
     val current = System.currentTimeMillis()
     val claims = JwtClaim(
       issuer = Some("W9WH7WV85S"),
@@ -80,5 +86,19 @@ class ApplePlatform(filename: String)(implicit cs: ContextShift[IO]) extends Soc
     dis.close
     ApnsSigningKey.loadFromPkcs8File(new File(filename), "W9WH7WV85S", "A423X8QGF3")
   }
+
+}
+
+object ApplePlatform {
+
+  case class AppleUser(sub: String, email: String)
+
+  case class TokenResponse(access_token: String, id_token: String)
+
+  lazy implicit val tokenResponseDecoder: Decoder[TokenResponse] = deriveDecoder[TokenResponse]
+  implicit def tokenResponseEntityDecoder[F[_] : Sync]: EntityDecoder[F, TokenResponse] = jsonOf
+
+  lazy implicit val appleUserDecoder: Decoder[AppleUser] = deriveDecoder[AppleUser]
+  implicit def appleUserEntityDecoder[F[_] : Sync]: EntityDecoder[F, AppleUser] = jsonOf
 
 }

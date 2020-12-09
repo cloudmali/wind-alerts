@@ -1,4 +1,4 @@
-package com.uptech.windalerts.social.subcriptions
+package com.uptech.windalerts.infrastructure.social.subscriptions
 
 import java.io.{File, InputStreamReader}
 import java.util.Collections
@@ -11,7 +11,6 @@ import com.google.api.client.googleapis.auth.oauth2.{GoogleAuthorizationCodeFlow
 import com.google.api.client.http.HttpTransport
 import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.androidpublisher.AndroidPublisherScopes
-
 
 object AndroidPublisherHelper {
 
@@ -27,11 +26,11 @@ object AndroidPublisherHelper {
 
   private val JSON_FACTORY = JacksonFactory.getDefaultInstance
 
-  private var HTTP_TRANSPORT:HttpTransport = null
+  private var HTTP_TRANSPORT: HttpTransport = null
 
   private val INST_APP_USER_ID = "user"
 
-  private var dataStoreFactory:FileDataStoreFactory  = null
+  private var dataStoreFactory: FileDataStoreFactory = null
 
   import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
   import com.google.api.services.androidpublisher.AndroidPublisher
@@ -40,7 +39,7 @@ object AndroidPublisherHelper {
   def init(applicationName: String, serviceAccountEmail: String): AndroidPublisher = {
     // Authorization.
     newTrustedTransport()
-    var credential:Credential = null
+    var credential: Credential = null
     if (serviceAccountEmail == null || serviceAccountEmail.isEmpty) credential = authorizeWithInstalledApplication
     else credential = authorizeWithServiceAccount(serviceAccountEmail)
     // Set up and return API client.
@@ -54,7 +53,7 @@ object AndroidPublisherHelper {
   private def authorizeWithServiceAccount(serviceAccountEmail: String) = {
     val keyFile = if (new File("/app/resources/key.p12").exists()) "/app/resources/key.p12" else SRC_RESOURCES_KEY_P12
     new GoogleCredential
-      .Builder()
+    .Builder()
       .setTransport(HTTP_TRANSPORT)
       .setJsonFactory(JSON_FACTORY)
       .setServiceAccountId(serviceAccountEmail)

@@ -9,9 +9,10 @@ import com.uptech.windalerts.alerts.AlertsService
 import com.uptech.windalerts.alerts.domain.AlertT
 import com.uptech.windalerts.domain.beaches.Beach
 import com.uptech.windalerts.domain.config.AppConfig
-import com.uptech.windalerts.domain.domain.{AlertWithUserWithBeach, BeachId, UserT}
+import com.uptech.windalerts.domain.domain.{BeachId}
 import com.uptech.windalerts.domain.{HttpErrorHandler, domain}
 import com.uptech.windalerts.status.BeachService
+import com.uptech.windalerts.users.UserT
 import org.log4s.getLogger
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -20,6 +21,7 @@ import scala.concurrent.Future
 class Notifications(A: AlertsService[IO], B: BeachService[IO], beaches: Map[Long, Beach], repos:Repos[IO], firebaseMessaging: FirebaseMessaging, H: HttpErrorHandler[IO],
                     config: AppConfig) {
   private val logger = getLogger
+  final case class AlertWithUserWithBeach(alert: AlertT, user: UserT, beach: domain.Beach)
 
 
   def sendNotification = {
@@ -79,7 +81,7 @@ class Notifications(A: AlertsService[IO], B: BeachService[IO], beaches: Map[Long
             .putHeader("apns-priority", "10").build())
           .setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH).build())
         .build())
-      val s = repos.notificationsRepo().create(com.uptech.windalerts.domain.domain.Notification(a._id.toHexString, a.owner, u.deviceToken, title, body, System.currentTimeMillis()))
+      val s = repos.notificationsRepo().create(com.uptech.windalerts.notifications.Notification(a._id.toHexString, a.owner, u.deviceToken, title, body, System.currentTimeMillis()))
       logger.warn(s"unsafeRunSync ${s.unsafeRunSync()}")
 
       logger.warn(s" sending to ${u.email} for ${a._id.toHexString} status : ${sent}")

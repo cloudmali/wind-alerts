@@ -4,9 +4,13 @@ import cats.data.{EitherT, OptionT}
 import cats.effect.Sync
 import com.github.t3hnar.bcrypt._
 import com.uptech.windalerts.Repos
+import com.uptech.windalerts.credentials.{Credentials, UserCredentialService}
 import com.uptech.windalerts.domain._
-import com.uptech.windalerts.domain.domain.UserType._
-import com.uptech.windalerts.domain.domain.{Credentials, SurfsUpEitherT, _}
+import com.uptech.windalerts.domain.domain.{SurfsUpEitherT, _}
+import com.uptech.windalerts.feedback.Feedback
+import com.uptech.windalerts.infrastructure.endpoints.domain.{AccessTokenRequest, LoginRequest, RegisterRequest}
+import com.uptech.windalerts.otp.OTPService
+import com.uptech.windalerts.tokens.RefreshToken
 import org.mongodb.scala.bson.ObjectId
 
 class UserService[F[_] : Sync](repos: Repos[F], userCredentialsService:UserCredentialService[F], otpService: OTPService[F], auth: AuthenticationService[F]) {

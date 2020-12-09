@@ -7,6 +7,7 @@ import cats.effect.IO
 import com.uptech.windalerts.Repos
 import com.uptech.windalerts.domain.domain._
 import com.uptech.windalerts.domain.{OperationNotAllowed, SurfsUpError, domain}
+import com.uptech.windalerts.tokens.RefreshToken
 import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.{JwtAuth, JwtSecretKey, JwtToken}
 import io.circe.parser._
@@ -22,7 +23,7 @@ trait AuthenticationService[F[_]] {
 
   def createToken(userId: String, accessTokenId: String): EitherT[F, SurfsUpError, AccessTokenWithExpiry]
 
-  def authorizePremiumUsers(user: domain.UserT): EitherT[F, SurfsUpError, UserT]
+  def authorizePremiumUsers(user: UserT): EitherT[F, SurfsUpError, UserT]
 
   def tokens(accessToken: String, refreshToken: RefreshToken, expiredAt: Long, user: UserT): EitherT[F, SurfsUpError, TokensWithUser]
 
@@ -73,7 +74,7 @@ class AuthenticationServiceImpl(repos: Repos[IO]) extends AuthenticationService[
     IO.pure((1 to n).map(_ => alpha(Random.nextInt.abs % size)).mkString)
   }
 
-  override def authorizePremiumUsers(user: domain.UserT): EitherT[IO, SurfsUpError, UserT] = {
+  override def authorizePremiumUsers(user: UserT): EitherT[IO, SurfsUpError, UserT] = {
     EitherT.fromEither(if (UserType(user.userType) == UserType.Premium || UserType(user.userType) == UserType.Trial) {
       Right(user)
     } else {

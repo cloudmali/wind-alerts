@@ -5,8 +5,9 @@ import cats.effect.{ContextShift, IO}
 import com.restfb.types.User
 import com.restfb.{DefaultFacebookClient, Parameter, Version}
 import com.uptech.windalerts.domain.UserNotFoundError
-import com.uptech.windalerts.domain.domain.{SocialUser, SurfsUpEitherT}
-import com.uptech.windalerts.social.login.domain.{FacebookAccessRequest, SocialPlatform}
+import com.uptech.windalerts.domain.domain.SurfsUpEitherT
+import com.uptech.windalerts.social.login.{SocialPlatform, SocialUser}
+import com.uptech.windalerts.social.login.domain.FacebookAccessRequest
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future

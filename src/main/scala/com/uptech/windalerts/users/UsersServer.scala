@@ -5,10 +5,12 @@ import cats.implicits._
 import com.softwaremill.sttp.HttpURLConnectionBackend
 import com.uptech.windalerts.LazyRepos
 import com.uptech.windalerts.alerts.AlertsService
+import com.uptech.windalerts.credentials.UserCredentialService
 import com.uptech.windalerts.domain.logger._
 import com.uptech.windalerts.domain.{HttpErrorHandler, errors, secrets, swellAdjustments}
 import com.uptech.windalerts.infrastructure.endpoints.{AlertsEndpoints, BeachesEndpoints, UsersEndpoints}
-import com.uptech.windalerts.social.login.{SocialLoginService}
+import com.uptech.windalerts.otp.OTPService
+import com.uptech.windalerts.social.login.SocialLoginService
 import com.uptech.windalerts.status._
 import com.uptech.windalerts.social.subcriptions.SubscriptionsService
 import org.http4s.implicits._

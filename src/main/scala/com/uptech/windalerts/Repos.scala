@@ -7,16 +7,20 @@ import cats.effect.{ContextShift, IO}
 import com.google.api.services.androidpublisher.AndroidPublisher
 import com.uptech.windalerts.alerts.AlertsRepositoryT
 import com.uptech.windalerts.alerts.domain.AlertT
+import com.uptech.windalerts.credentials.{AppleCredentials, Credentials, CredentialsRepository, FacebookCredentials, SocialCredentialsRepository}
 import com.uptech.windalerts.domain.beaches.Beach
 import com.uptech.windalerts.domain.domain._
 import com.uptech.windalerts.domain.secrets
+import com.uptech.windalerts.feedback.{Feedback, FeedbackRepository}
 import com.uptech.windalerts.infrastructure.EmailSender
 import com.uptech.windalerts.infrastructure.repositories.mongo._
 import com.uptech.windalerts.infrastructure.social.login.{ApplePlatform, FacebookPlatform}
-import com.uptech.windalerts.notifications.NotificationRepository
-import com.uptech.windalerts.social.login.domain
-import com.uptech.windalerts.social.login.domain.SocialPlatform
-import com.uptech.windalerts.social.subcriptions.{AndroidPublisherHelper, AndroidTokenRepository, AppleTokenRepository}
+import com.uptech.windalerts.infrastructure.social.subscriptions.AndroidPublisherHelper
+import com.uptech.windalerts.notifications.{Notification, NotificationRepository}
+import com.uptech.windalerts.otp.{OTPWithExpiry, OtpRepository}
+import com.uptech.windalerts.social.login.{SocialPlatform, domain}
+import com.uptech.windalerts.social.subcriptions.{AndroidToken, AndroidTokenRepository, AppleToken, AppleTokenRepository, ApplicationConfig}
+import com.uptech.windalerts.tokens.{RefreshToken, RefreshTokenRepositoryAlgebra}
 import com.uptech.windalerts.users._
 import org.mongodb.scala.{MongoClient, MongoDatabase}
 

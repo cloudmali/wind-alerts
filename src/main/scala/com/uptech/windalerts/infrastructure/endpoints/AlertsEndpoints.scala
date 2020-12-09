@@ -4,8 +4,10 @@ import cats.data.EitherT
 import cats.effect.Effect
 import com.uptech.windalerts.alerts.AlertsService
 import com.uptech.windalerts.domain.codecs._
+import com.uptech.windalerts.infrastructure.endpoints.codecs._
 import com.uptech.windalerts.domain.domain._
 import com.uptech.windalerts.domain.{HttpErrorHandler, http}
+import com.uptech.windalerts.infrastructure.endpoints.domain.Alerts
 import com.uptech.windalerts.users.{AuthenticationService, UserService}
 import org.http4s.AuthedRoutes
 

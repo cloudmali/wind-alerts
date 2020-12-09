@@ -4,9 +4,8 @@ package com.uptech.windalerts.infrastructure.repositories.mongo
 import cats.data.{EitherT, OptionT}
 import cats.effect.{ContextShift, IO}
 import com.uptech.windalerts.domain.{SurfsUpError, UserNotFoundError, domain}
-import com.uptech.windalerts.domain.domain.UserT
-import com.uptech.windalerts.domain.domain.UserType.{Premium, Trial}
-import com.uptech.windalerts.users.UserRepositoryAlgebra
+import com.uptech.windalerts.users.UserType.{Premium, Trial}
+import com.uptech.windalerts.users.{UserRepositoryAlgebra, UserT}
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.bson.ObjectId
 import org.mongodb.scala.bson.conversions.Bson
@@ -34,7 +33,7 @@ class MongoUserRepository(collection: MongoCollection[UserT])(implicit cs: Conte
     IO.fromFuture(IO(collection.insertOne(user).toFuture().map(_ => user)))
   }
 
-  override def update(user: domain.UserT): OptionT[IO, domain.UserT] = {
+  override def update(user: UserT): OptionT[IO, UserT] = {
     OptionT.liftF(
       for {
         updateResultIO <- IO.fromFuture(IO(collection.replaceOne(equal("_id", user._id), user).toFuture()))

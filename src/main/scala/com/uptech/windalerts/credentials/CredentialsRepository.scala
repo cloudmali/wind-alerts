@@ -1,7 +1,6 @@
-package com.uptech.windalerts.users
+package com.uptech.windalerts.credentials
 
 import cats.data.OptionT
-import com.uptech.windalerts.domain.domain.Credentials
 
 
 trait CredentialsRepository[F[_]] {
