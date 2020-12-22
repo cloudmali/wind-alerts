@@ -8,7 +8,7 @@ import com.uptech.windalerts.credentials.{Credentials, UserCredentialService}
 import com.uptech.windalerts.domain._
 import com.uptech.windalerts.domain.domain.{SurfsUpEitherT, _}
 import com.uptech.windalerts.feedback.Feedback
-import com.uptech.windalerts.infrastructure.endpoints.domain.{AccessTokenRequest, LoginRequest, RegisterRequest}
+import com.uptech.windalerts.infrastructure.endpoints.domain.{AccessTokenRequest, LoginRequest, RegisterRequest, TokensWithUser}
 import com.uptech.windalerts.otp.OTPService
 import com.uptech.windalerts.tokens.RefreshToken
 import org.mongodb.scala.bson.ObjectId

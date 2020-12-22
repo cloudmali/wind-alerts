@@ -7,6 +7,7 @@ import cats.effect.IO
 import com.uptech.windalerts.Repos
 import com.uptech.windalerts.domain.domain._
 import com.uptech.windalerts.domain.{OperationNotAllowed, SurfsUpError, domain}
+import com.uptech.windalerts.infrastructure.endpoints.domain.{TokensWithUser, UserId}
 import com.uptech.windalerts.tokens.RefreshToken
 import dev.profunktor.auth.JwtAuthMiddleware
 import dev.profunktor.auth.jwt.{JwtAuth, JwtSecretKey, JwtToken}
@@ -65,7 +66,7 @@ class AuthenticationServiceImpl(repos: Repos[IO]) extends AuthenticationService[
   }
 
   override def tokens(accessToken: String, refreshToken: RefreshToken, expiredAt: Long, user: UserT): EitherT[IO, SurfsUpError, TokensWithUser] =
-    EitherT.right(IO(domain.TokensWithUser(accessToken, refreshToken.refreshToken, expiredAt, user.asDTO())))
+    EitherT.right(IO(TokensWithUser(accessToken, refreshToken.refreshToken, expiredAt, user.asDTO())))
 
   def createOtp(n: Int) = {
     val alpha = "0123456789"

@@ -39,7 +39,6 @@ class EmailSender[F[_]](apiKey: String) {
                $params
            }
        }"""
-      println(requestBody)
 
       val req = sttp.body(
         requestBody.stripMargin).header("api-key", apiKey)

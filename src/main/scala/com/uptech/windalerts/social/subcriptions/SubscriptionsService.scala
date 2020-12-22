@@ -6,8 +6,8 @@ import cats.effect.Sync
 import com.softwaremill.sttp.{HttpURLConnectionBackend, sttp, _}
 import com.uptech.windalerts.Repos
 import com.uptech.windalerts.domain.codecs._
-import com.uptech.windalerts.domain.domain.{AndroidReceiptValidationRequest, AppleSubscriptionPurchase}
 import com.uptech.windalerts.domain.{SurfsUpError, UnknownError, domain}
+import com.uptech.windalerts.infrastructure.endpoints.domain.AndroidReceiptValidationRequest
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.optics.JsonPath.root
 import io.circe.syntax._
@@ -20,13 +20,13 @@ import org.log4s.getLogger
 
 class SubscriptionsService[F[_] : Sync](repos: Repos[F]) {
   import SubscriptionsService._
-  def getAndroidPurchase(request: AndroidReceiptValidationRequest): EitherT[F, SurfsUpError, domain.SubscriptionPurchase] = {
+  def getAndroidPurchase(request: AndroidReceiptValidationRequest): EitherT[F, SurfsUpError, SubscriptionPurchase] = {
     getAndroidPurchase(request.productId, request.token)
   }
 
-  def getAndroidPurchase(productId: String, token: String): EitherT[F, SurfsUpError, domain.SubscriptionPurchase] = {
+  def getAndroidPurchase(productId: String, token: String): EitherT[F, SurfsUpError, SubscriptionPurchase] = {
     EitherT.pure({
-      repos.androidPublisher().purchases().subscriptions().get(ApplicationConfig.PACKAGE_NAME, productId, token).execute().into[domain.SubscriptionPurchase].enableBeanGetters
+      repos.androidPublisher().purchases().subscriptions().get(ApplicationConfig.PACKAGE_NAME, productId, token).execute().into[SubscriptionPurchase].enableBeanGetters
         .withFieldComputed(_.expiryTimeMillis, _.getExpiryTimeMillis.toLong)
         .withFieldComputed(_.startTimeMillis, _.getStartTimeMillis.toLong).transform
     })
@@ -56,6 +56,7 @@ class SubscriptionsService[F[_] : Sync](repos: Repos[F]) {
 }
 
 object SubscriptionsService {
+  case class AppleSubscriptionPurchase(product_id: String, purchase_date_ms: Long, expires_date_ms: Long)
   case class ApplePurchaseVerificationRequest(`receipt-data`: String, password: String, `exclude-old-transactions`: Boolean)
 
   lazy implicit val applePurchaseVerificationRequestDecoder: Decoder[ApplePurchaseVerificationRequest] = deriveDecoder[ApplePurchaseVerificationRequest]
@@ -63,5 +64,10 @@ object SubscriptionsService {
   lazy implicit val applePurchaseVerificationRequestEncoder: Encoder[ApplePurchaseVerificationRequest] = deriveEncoder[ApplePurchaseVerificationRequest]
   implicit def applePurchaseVerificationRequestEncoder[F[_] : Applicative]: EntityEncoder[F, ApplePurchaseVerificationRequest] = jsonEncoderOf
 
+
+  lazy implicit val appleSubscriptionPurchaseDecoder: Decoder[AppleSubscriptionPurchase] = deriveDecoder[AppleSubscriptionPurchase]
+  implicit def appleSubscriptionPurchaseEntityDecoder[F[_] : Sync]: EntityDecoder[F, AppleSubscriptionPurchase] = jsonOf
+  lazy implicit val appleSubscriptionPurchaseEncoder: Encoder[AppleSubscriptionPurchase] = deriveEncoder[AppleSubscriptionPurchase]
+  implicit def appleSubscriptionPurchaseEnityEncoder[F[_] : Applicative]: EntityEncoder[F, AppleSubscriptionPurchase] = jsonEncoderOf
 
 }

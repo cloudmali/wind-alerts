@@ -9,9 +9,7 @@ import com.uptech.windalerts.domain.{UserAuthenticationFailedError, conversions,
 import com.uptech.windalerts.infrastructure.endpoints.domain.ChangePasswordRequest
 
 class UserCredentialService[F[_] : Sync](repos: Repos[F])  {
-  def getByCredentials(
-                        email: String, password: String, deviceType: String
-                      ): SurfsUpEitherT[F, Credentials] =
+  def getByCredentials(email: String, password: String, deviceType: String): SurfsUpEitherT[F, Credentials] =
     for {
       creds <- repos.credentialsRepo().findByCreds(email, deviceType).toRight(UserAuthenticationFailedError(email))
       passwordMatched <- isPasswordMatch(password, creds)
@@ -25,9 +23,7 @@ class UserCredentialService[F[_] : Sync](repos: Repos[F])  {
     })
   }
 
-  def resetPassword(
-                     email: String, deviceType: String
-                   ): SurfsUpEitherT[F, Credentials] =
+  def resetPassword(email: String, deviceType: String): SurfsUpEitherT[F, Credentials] =
     for {
       creds <- repos.credentialsRepo().findByCreds(email, deviceType).toRight(UserAuthenticationFailedError(email))
       newPassword <- EitherT.pure(conversions.generateRandomString(10))

@@ -1,4 +1,4 @@
-package com.uptech.windalerts.status
+package com.uptech.windalerts.infrastructure.beaches
 
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -8,10 +8,13 @@ import cats.data.EitherT
 import cats.effect.Sync
 import cats.{Applicative, Functor}
 import com.softwaremill.sttp._
-import com.uptech.windalerts.domain.{SurfsUpError, UnknownError, domain}
-import com.uptech.windalerts.domain.domain.{BeachId, SurfsUpEitherT}
+import com.uptech.windalerts.domain.UnknownError
+import com.uptech.windalerts.domain.domain.SurfsUpEitherT
 import com.uptech.windalerts.domain.swellAdjustments.Adjustments
-import com.uptech.windalerts.status.Swells.Swell
+import com.uptech.windalerts.infrastructure.beaches.Swells.Swell
+import com.uptech.windalerts.infrastructure.endpoints
+import com.uptech.windalerts.infrastructure.endpoints.domain.BeachId
+import com.uptech.windalerts.status.SwellsService
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.optics.JsonPath._
 import io.circe.{Decoder, Encoder, parser}
@@ -20,13 +23,13 @@ import org.http4s.{EntityDecoder, EntityEncoder}
 import org.log4s.getLogger
 
 
-class SwellsService[F[_] : Sync](apiKey: String, adjustments: Adjustments)(implicit backend: SttpBackend[Id, Nothing]) {
+class WillyWeatherSwellsService[F[_] : Sync](apiKey: String, adjustments: Adjustments)(implicit backend: SttpBackend[Id, Nothing], F: Functor[F]) extends SwellsService[F] {
   private val logger = getLogger
 
-  def get(beachId: BeachId)(implicit F: Functor[F]): SurfsUpEitherT[F, domain.Swell] =
+  def get(beachId: BeachId): SurfsUpEitherT[F, com.uptech.windalerts.infrastructure.endpoints.domain.Swell] =
     EitherT.fromEither(getFromWillyWeatther(apiKey, beachId))
 
-  def getFromWillyWeatther(apiKey: String, beachId: BeachId): Either[UnknownError, domain.Swell] = {
+  def getFromWillyWeatther(apiKey: String, beachId: BeachId): Either[UnknownError, com.uptech.windalerts.infrastructure.endpoints.domain.Swell] = {
     logger.error(s"Fetching swell status for $beachId")
 
     val body = sttp.get(uri"https://api.willyweather.com.au/v2/$apiKey/locations/${beachId.id}/weather.json?forecasts=swell&days=1").send().body
@@ -40,8 +43,8 @@ class SwellsService[F[_] : Sync](apiKey: String, adjustments: Adjustments)(impli
         _.flatMap(j => j.as[Swell].toSeq.filter(isCurrentHour(body, _)))
           .map(swell => swell.copy(height = adjustments.adjust(swell.height)))
           .headOption.toRight(UnknownError("Empty response from WW")))
-      .map(swell => domain.Swell(swell.height, swell.direction, swell.directionText))
-      .orElse(Right(domain.Swell(Double.NaN, Double.NaN, "NA")))
+      .map(swell => endpoints.domain.Swell(swell.height, swell.direction, swell.directionText))
+      .orElse(Right(endpoints.domain.Swell(Double.NaN, Double.NaN, "NA")))
   }
 
   private def isCurrentHour(body: Either[String, String], s: Swell) = {

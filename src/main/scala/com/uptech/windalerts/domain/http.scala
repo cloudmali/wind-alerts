@@ -3,7 +3,8 @@ package com.uptech.windalerts.domain
 import cats.data.{EitherT, OptionT}
 import cats.effect.Effect
 import cats.implicits._
-import com.uptech.windalerts.domain.domain.{SurfsUpEitherT, UserId}
+import com.uptech.windalerts.domain.domain.{SurfsUpEitherT}
+import com.uptech.windalerts.infrastructure.endpoints.domain.UserId
 import org.http4s.dsl.Http4sDsl
 import org.http4s.{AuthedRequest, EntityDecoder, EntityEncoder, Response}
 

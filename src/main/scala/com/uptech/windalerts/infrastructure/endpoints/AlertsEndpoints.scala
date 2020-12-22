@@ -7,7 +7,7 @@ import com.uptech.windalerts.domain.codecs._
 import com.uptech.windalerts.infrastructure.endpoints.codecs._
 import com.uptech.windalerts.domain.domain._
 import com.uptech.windalerts.domain.{HttpErrorHandler, http}
-import com.uptech.windalerts.infrastructure.endpoints.domain.Alerts
+import com.uptech.windalerts.infrastructure.endpoints.domain.{AlertRequest, Alerts, UserId}
 import com.uptech.windalerts.users.{AuthenticationService, UserService}
 import org.http4s.AuthedRoutes
 
@@ -17,7 +17,7 @@ class AlertsEndpoints[F[_] : Effect](alertService: AlertsService[F], usersServic
       case _@GET -> Root as user => {
         handleOkNoDecode(user, (_: UserId) =>
           EitherT.liftF(alertService.getAllForUser(user.id))
-            .map(alerts => Alerts(alerts.alerts.map(_.asDTO())))
+            .map(alerts => Alerts(alerts.map(_.asDTO())))
         )
       }
 

@@ -8,6 +8,8 @@ import com.uptech.windalerts.alerts.AlertsService
 import com.uptech.windalerts.credentials.UserCredentialService
 import com.uptech.windalerts.domain.logger._
 import com.uptech.windalerts.domain.{HttpErrorHandler, errors, secrets, swellAdjustments}
+import com.uptech.windalerts.infrastructure.beaches
+import com.uptech.windalerts.infrastructure.beaches.{WillyWeatherSwellsService, WillyWeatherTidesService, WillyWeatherWindsService}
 import com.uptech.windalerts.infrastructure.endpoints.{AlertsEndpoints, BeachesEndpoints, UsersEndpoints}
 import com.uptech.windalerts.otp.OTPService
 import com.uptech.windalerts.social.login.SocialLoginService
@@ -38,7 +40,7 @@ object UsersServer extends IOApp {
     userRolesService <- IO(new UserRolesService[IO](repos, subscriptionsService))
 
     apiKey <- IO(secrets.read.surfsUp.willyWeather.key)
-    beaches <- IO(new BeachService[IO](new WindsService[IO](apiKey), new TidesService[IO](apiKey, repos), new SwellsService[IO](apiKey, swellAdjustments.read)))
+    beaches <- IO(new BeachService[IO](new WillyWeatherWindsService[IO](apiKey), new WillyWeatherTidesService[IO](apiKey, repos), new WillyWeatherSwellsService[IO](apiKey, swellAdjustments.read)))
     httpErrorHandler <- IO(new HttpErrorHandler[IO])
 
     endpoints <- IO(new UsersEndpoints(repos, userCredentialsService, usersService, socialLoginService, userRolesService, subscriptionsService, httpErrorHandler))

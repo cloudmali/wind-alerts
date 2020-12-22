@@ -5,6 +5,7 @@ import cats.effect.Sync
 import com.uptech.windalerts.Repos
 import com.uptech.windalerts.credentials.{AppleCredentials, FacebookCredentials, SocialCredentials}
 import com.uptech.windalerts.domain.domain._
+import com.uptech.windalerts.infrastructure.endpoints.domain.TokensWithUser
 import com.uptech.windalerts.users.{UserService, UserT}
 import org.mongodb.scala.bson.ObjectId
 

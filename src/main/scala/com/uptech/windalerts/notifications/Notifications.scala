@@ -9,8 +9,9 @@ import com.uptech.windalerts.alerts.AlertsService
 import com.uptech.windalerts.alerts.domain.AlertT
 import com.uptech.windalerts.domain.beaches.Beach
 import com.uptech.windalerts.domain.config.AppConfig
-import com.uptech.windalerts.domain.domain.{BeachId}
 import com.uptech.windalerts.domain.{HttpErrorHandler, domain}
+import com.uptech.windalerts.infrastructure.endpoints
+import com.uptech.windalerts.infrastructure.endpoints.domain.BeachId
 import com.uptech.windalerts.status.BeachService
 import com.uptech.windalerts.users.UserT
 import org.log4s.getLogger
@@ -20,8 +21,8 @@ import scala.concurrent.Future
 
 class Notifications(A: AlertsService[IO], B: BeachService[IO], beaches: Map[Long, Beach], repos:Repos[IO], firebaseMessaging: FirebaseMessaging, H: HttpErrorHandler[IO],
                     config: AppConfig) {
+  import Notifications._
   private val logger = getLogger
-  final case class AlertWithUserWithBeach(alert: AlertT, user: UserT, beach: domain.Beach)
 
 
   def sendNotification = {
@@ -31,7 +32,7 @@ class Notifications(A: AlertsService[IO], B: BeachService[IO], beaches: Map[Long
       _                               <- EitherT.liftF(IO(logger.error(s"alertsByBeaches ${alertsByBeaches.mapValues(v=>v.map(_.beachId)).mkString}")))
       beaches                         <- B.getAll(alertsByBeaches.keys.toSeq)
       x                               =  alertsByBeaches.map(kv => (beaches(kv._1), kv._2))
-      alertsToBeNotified              =  x.map(kv => (kv._1, kv._2.filter(_.isToBeNotified(kv._1)).map(a => domain.AlertWithBeach(a, kv._1))))
+      alertsToBeNotified              =  x.map(kv => (kv._1, kv._2.filter(_.isToBeNotified(kv._1)).map(a => AlertWithBeach(a, kv._1))))
       _                               <- EitherT.liftF(IO(logger.error(s"alertsToBeNotified ${alertsToBeNotified.mkString}")))
       usersToBeNotified               <- alertsToBeNotified.values.flatten.map(v => repos.usersRepo().getByUserIdEitherT(v.alert.owner)).toList.sequence
       userIdToUser                    =  usersToBeNotified.map(u => (u._id.toHexString, u)).toMap
@@ -96,4 +97,9 @@ class Notifications(A: AlertsService[IO], B: BeachService[IO], beaches: Map[Long
     }
   }
 
+}
+
+object Notifications {
+  final case class AlertWithBeach(alert: AlertT, beach: com.uptech.windalerts.infrastructure.endpoints.domain.Beach)
+  final case class AlertWithUserWithBeach(alert: AlertT, user: UserT, beach: com.uptech.windalerts.infrastructure.endpoints.domain.Beach)
 }

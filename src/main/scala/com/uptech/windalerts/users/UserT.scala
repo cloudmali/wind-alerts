@@ -1,6 +1,6 @@
 package com.uptech.windalerts.users
 
-import com.uptech.windalerts.domain.domain.UserDTO
+import com.uptech.windalerts.infrastructure.endpoints.domain.UserDTO
 import com.uptech.windalerts.users.UserType.{Registered, Trial}
 import io.scalaland.chimney.dsl._
 import org.mongodb.scala.bson.ObjectId

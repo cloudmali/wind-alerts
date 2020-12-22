@@ -1,11 +1,14 @@
-package com.uptech.windalerts.status
+package com.uptech.windalerts.infrastructure.beaches
 
 import cats.data.EitherT
 import cats.effect.Sync
 import cats.{Applicative, Functor, Monad}
-import com.softwaremill.sttp.{HttpURLConnectionBackend, _}
-import com.uptech.windalerts.domain.{UnknownError, domain}
-import com.uptech.windalerts.domain.domain.{BeachId, SurfsUpEitherT}
+import com.softwaremill.sttp._
+import com.uptech.windalerts.domain.UnknownError
+import com.uptech.windalerts.domain.domain.SurfsUpEitherT
+import com.uptech.windalerts.infrastructure.endpoints
+import com.uptech.windalerts.infrastructure.endpoints.domain.BeachId
+import com.uptech.windalerts.status.WindsService
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder, parser}
 import org.http4s.circe.{jsonEncoderOf, jsonOf}
@@ -33,13 +36,13 @@ object Wind {
     jsonEncoderOf
 }
 
-class WindsService[F[_] : Sync](apiKey: String)(implicit backend: SttpBackend[Id, Nothing]) {
+class WillyWeatherWindsService[F[_] : Sync](apiKey: String)(implicit backend: SttpBackend[Id, Nothing], F: Functor[F]) extends WindsService[F] {
   private val logger = getLogger
 
-  def get(beachId: BeachId)(implicit F: Functor[F]): SurfsUpEitherT[F, domain.Wind] =
+  def get(beachId: BeachId): SurfsUpEitherT[F, endpoints.domain.Wind] =
     EitherT.fromEither(getFromWillyWeatther(apiKey, beachId))
 
-  def getFromWillyWeatther(apiKey: String, beachId: BeachId)(implicit F: Monad[F]): Either[UnknownError, domain.Wind] = {
+  def getFromWillyWeatther(apiKey: String, beachId: BeachId)(implicit F: Monad[F]): Either[UnknownError, endpoints.domain.Wind] = {
     logger.error(s"Fetching wind status for $beachId")
     val res = for {
       body <- sttp.get(uri"https://api.willyweather.com.au/v2/$apiKey/locations/${beachId.id}/weather.json?observational=true").send()
@@ -48,8 +51,8 @@ class WindsService[F[_] : Sync](apiKey: String)(implicit backend: SttpBackend[Id
         .map(UnknownError(_))
       parsed <- parser.parse(body).left.map(f=>UnknownError(f.message))
       wind <- parsed.hcursor.downField("observational").downField("observations").downField("wind").as[Wind].left.map(f=>UnknownError(f.message))
-    } yield  domain.Wind(wind.direction, wind.speed, wind.directionText)
-    res.orElse(Right(domain.Wind(Double.NaN, Double.NaN, "NA")))
+    } yield  endpoints.domain.Wind(wind.direction, wind.speed, wind.directionText)
+    res.orElse(Right(endpoints.domain.Wind(Double.NaN, Double.NaN, "NA")))
   }
 
 }

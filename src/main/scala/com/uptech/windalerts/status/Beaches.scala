@@ -4,7 +4,20 @@ import cats.effect.Sync
 import cats.implicits._
 import com.uptech.windalerts.domain.WWError
 import com.uptech.windalerts.domain.domain._
+import com.uptech.windalerts.infrastructure.endpoints
+import com.uptech.windalerts.infrastructure.endpoints.domain._
 
+trait SwellsService[F[_]] {
+  def get(beachId: BeachId): SurfsUpEitherT[F, com.uptech.windalerts.infrastructure.endpoints.domain.Swell]
+}
+
+trait WindsService[F[_]] {
+  def get(beachId: BeachId): SurfsUpEitherT[F, endpoints.domain.Wind]
+}
+
+trait TidesService[F[_]] {
+  def get(beachId: BeachId): SurfsUpEitherT[F, TideHeight]
+}
 
 class BeachService[F[_] : Sync](W: WindsService[F],
                                 T: TidesService[F],
